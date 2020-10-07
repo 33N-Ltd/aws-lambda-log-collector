@@ -37,7 +37,16 @@ data "aws_iam_policy_document" "lambda_config_policy" {
 
   statement {
     effect = "Allow"
-    actions = ["kms:*"]
+    actions = [
+      "kms:Decrypt",
+      "kms:Encrypt",
+      "kms:RevokeGrant",
+      "kms:GenerateDataKey",
+      "kms:GenerateDataKeyWithoutPlaintext",
+      "kms:DescribeKey",
+      "kms:CreateGrant",
+      "kms:ListGrants"
+    ]
     resources = ["*"]
   }
 }
