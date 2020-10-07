@@ -121,13 +121,18 @@ def log_collector(logGroupName, awsRegion, s3BucketName, passNumber):
             event.update({'group': log_group_name, 'stream': stream})
             out_file.append(json.dumps(event))
         print(stream, ":", len(logs_batch['events']))
-        while 'nextToken' in logs_batch:
-            logs_batch = client.get_log_events(logGroupName=log_group_name, logStreamName=stream, startTime=ts, endTime=te,
-                                               nextToken=logs_batch['nextToken'])
-            for event in logs_batch['events']:
-                event.update({'group': log_group_name, 'stream': stream})
-                out_file.append(json.dumps(event))
-    
+        # GetLogEvents API call will return max 10000 events per log stream. We need a loop if logStream has more events, similarly than in previous loops, 
+        # but this time we need extra logic since GetLogEvents API will ALWAYS return a nextBackwardToken (response token equals request token at the end).
+        # We check for the length of the events array, when we have reached the end it will be 0.
+        while 'nextBackwardToken' in logs_batch and len(logs_batch['events']) != 0:
+            logs_batch = client.get_log_events(logGroupName=log_group_name, logStreamName=stream, startTime=ts, endTime=te, nextToken=logs_batch['nextBackwardToken'])
+            if len(logs_batch['events']) != 0:
+                print(stream, ":", len(logs_batch['events']))
+                for event in logs_batch['events']:
+                    event.update({'group': log_group_name, 'stream': stream})
+                    out_file.append(json.dumps(event))
+
+
     print('-------------------------------------------\nTotal number of events: ' + str(len(out_file)))
     print(file_name)
 
