@@ -34,12 +34,10 @@ def lambda_handler(event,context):
 
     # init boto3
     client = boto3.client('logs', region_name=aws_region)
-    response = client.describe_log_groups()
 
     # get the output of LogGroups api call, "stream" it into an array of objects and then loop through the array to create a list array of logGroupNames 
     log_group_stream = client.describe_log_groups() #logGroupName=log_group_name, descending=True, limit=50, orderBy='LastEventTime')
     log_group_object_array += log_group_stream['logGroups']
-    log_group_name_dict = [stream_lg['logGroupName'] for stream_lg in log_group_object_array]
 
     # LogGroups API call will only return max 50 results so we need to handle situations where the number of logGroups is greater than 50
     while 'nextToken' in log_group_stream:
@@ -102,7 +100,6 @@ def log_collector(logGroupName, awsRegion, s3BucketName, passNumber):
     all_streams = []
     stream_batch = client.describe_log_streams(logGroupName=log_group_name, descending=True, limit=50, orderBy='LastEventTime')
     all_streams += stream_batch['logStreams']
-    stream_names = [stream['logStreamName'] for stream in all_streams]
 
     # LogStreams API call will only return max 50 results at a time so we need to handle situations where the number is greater.
     # But since a single log group can, over the years, accumulate tens of thousands of log streams and since we don't want to
