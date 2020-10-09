@@ -116,8 +116,8 @@ def log_collector(logGroupName, awsRegion, s3BucketName, passNumber):
             out_file.append(json.dumps(event))
         # GetLogEvents API call will return max 10000 events per log stream. We need a loop if logStream has more events, similarly than in previous loops, 
         # but this time we need extra logic since GetLogEvents API will ALWAYS return a nextBackwardToken (response token equals request token at the end).
-        # For this same reason we always go inside the while loop for and execute at least the first print statement, make the next logs_batch request and
-        # check for the length of the events array - if it is 0 then we are at the end and both the loop and the if-clause within the loop equal false.
+        # For this same reason we always go inside the while loop and execute at least the first print statement, make the next logs_batch request and
+        # check for the length of the events array - if it is 0 then we are at the end and both the loop and the if-clause within the loop equal to false.
         while 'nextBackwardToken' in logs_batch and len(logs_batch['events']) != 0:
             print(stream, ":", len(logs_batch['events']), "     Group total :", len(out_file))
             logs_batch = client.get_log_events(logGroupName=log_group_name, logStreamName=stream, startTime=ts, endTime=te, startFromHead=True, nextToken=logs_batch['nextBackwardToken'])
